@@ -66,6 +66,11 @@ export const translations = {
     dangerAlert: { en: "Danger detected! Help is being called.", sw: "Hatari imegunduliwa! Msaada unaitwa." },
     safeConfirm: { en: "You are now marked as safe.", sw: "Umewekwa kama mtu aliye salama." },
     locationShared: { en: "Your location has been shared with emergency contacts.", sw: "Mahali ulipo umeshirikiwa na anwani za dharura." },
+    listening: { en: "Listening for voice command...", sw: "Sikiliza amri ya sauti..." },
+    voiceActivated: { en: "Voice activated", sw: "Sauti imewashwa" },
+    voiceDeactivated: { en: "Voice deactivated", sw: "Sauti imezimwa" },
+    commandNotRecognized: { en: "Command not recognized", sw: "Amri haijatambuliwa" },
+    voiceNotSupported: { en: "Voice recognition not supported", sw: "Utambuzi wa sauti hauungwi" },
   },
 
   // Forms & Validation

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, Shield, Phone, MapPin } from 'lucide-react';
+import { AlertTriangle, Shield, Phone, MapPin, Mic, MicOff } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { t } from '@/utils/localization';
 import { useToast } from '@/hooks/use-toast';
+import { useVoiceRecognition } from '@/hooks/useVoiceRecognition';
 
 interface EmergencyButtonProps {
   onEmergencyTrigger?: () => void;
@@ -54,6 +55,24 @@ export const EmergencyButton: React.FC<EmergencyButtonProps> = ({
       description: `${t('actions.call')}: ${number}`,
     });
   };
+
+  const { isListening, isSupported, toggleListening } = useVoiceRecognition({
+    onEmergency: handleEmergency,
+    onSafe: handleSafe,
+    onCallPolice: () => callEmergency('999', t('map.police')),
+    onShareLocation: () => {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        const message = `${t('emergency.shareLocation')}: https://maps.google.com/?q=${latitude},${longitude}`;
+        navigator.share?.({ text: message }) || 
+        navigator.clipboard?.writeText(message);
+        toast({
+          title: t('emergency.shareLocation'),
+          description: t('voice.locationShared'),
+        });
+      });
+    }
+  });
 
   if (isEmergency) {
     return (
@@ -114,6 +133,18 @@ export const EmergencyButton: React.FC<EmergencyButtonProps> = ({
         <AlertTriangle className="h-8 w-8" />
         {isLoading ? t('emergency.sendingAlert') : t('emergency.helpMe')}
       </Button>
+
+      {isSupported && (
+        <Button
+          variant={isListening ? "destructive" : "outline"}
+          size="lg"
+          onClick={toggleListening}
+          className="w-full h-12 font-medium"
+        >
+          {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+          {isListening ? t('voice.listening') : t('voice.voiceActivated')}
+        </Button>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <Button
