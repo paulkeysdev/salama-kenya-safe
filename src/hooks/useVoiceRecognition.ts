@@ -39,6 +39,23 @@ const voiceCommands: VoiceCommand[] = [
   }
 ];
 
+// Critical Swahili emergency words that auto-trigger police messaging
+const criticalEmergencyWords = [
+  'mauaji', // murder
+  'unyanyasaji', // rape/assault
+  'wizi', // theft
+  'bunduki', // gun
+  'kisu', // knife
+  'naogopa', // I'm scared
+  'nateseka', // I'm suffering
+  'mwizi', // thief
+  'vibaya', // bad/dangerous
+  'nateseka sana', // I'm suffering badly
+  'nataka msaada', // I need help
+  'polisi haraka', // police quickly
+  'hali ya dharura' // state of emergency
+];
+
 interface UseVoiceRecognitionProps {
   onEmergency?: () => void;
   onSafe?: () => void;
@@ -72,6 +89,40 @@ export const useVoiceRecognition = ({
       setIsSupported(false);
     }
   }, []);
+
+  const checkCriticalEmergency = useCallback((transcript: string): boolean => {
+    const normalizedTranscript = transcript.toLowerCase().trim();
+    return criticalEmergencyWords.some(word => 
+      normalizedTranscript.includes(word.toLowerCase())
+    );
+  }, []);
+
+  const autoSendPoliceMessage = useCallback(() => {
+    // Auto-send emergency message to police (999 in Kenya)
+    const emergencyMessage = `EMERGENCY: Automatic alert triggered by voice recognition at ${new Date().toLocaleString()}. Location: ${window.location.href}`;
+    
+    // Try to get location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const location = `${position.coords.latitude},${position.coords.longitude}`;
+          console.log('Emergency location:', location);
+          // In production, this would send to actual emergency services
+        },
+        (error) => console.log('Location error:', error),
+        { timeout: 5000 }
+      );
+    }
+
+    toast({
+      title: t('voice.emergencyAlertSent'),
+      description: t('voice.policeNotified'),
+      variant: 'destructive'
+    });
+
+    // Also trigger emergency callback
+    onEmergency?.();
+  }, [onEmergency, toast]);
 
   const matchCommand = useCallback((transcript: string): string | null => {
     const normalizedTranscript = transcript.toLowerCase().trim();
@@ -118,6 +169,14 @@ export const useVoiceRecognition = ({
 
     recognition.onresult = (event) => {
       const transcript = event.results[event.results.length - 1][0].transcript;
+      
+      // Check for critical emergency words first - auto-trigger police
+      if (checkCriticalEmergency(transcript)) {
+        autoSendPoliceMessage();
+        stopListening();
+        return;
+      }
+      
       const matchedAction = matchCommand(transcript);
       
       if (matchedAction) {

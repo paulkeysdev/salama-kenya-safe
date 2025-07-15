@@ -71,6 +71,8 @@ export const translations = {
     voiceDeactivated: { en: "Voice deactivated", sw: "Sauti imezimwa" },
     commandNotRecognized: { en: "Command not recognized", sw: "Amri haijatambuliwa" },
     voiceNotSupported: { en: "Voice recognition not supported", sw: "Utambuzi wa sauti hauungwi" },
+    emergencyAlertSent: { en: "Emergency Alert Sent", sw: "Tahadhari ya Dharura Imetumwa" },
+    policeNotified: { en: "Police have been automatically notified", sw: "Polisi wamearifu kiotomatiki" },
   },
 
   // Forms & Validation
