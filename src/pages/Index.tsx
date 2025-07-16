@@ -4,6 +4,8 @@ import { Navigation } from '@/components/Navigation';
 import { EmergencyButton } from '@/components/EmergencyButton';
 import { ContactManager } from '@/components/ContactManager';
 import { SafetyMap } from '@/components/SafetyMap';
+import { Profile } from '@/components/Profile';
+import { Settings } from '@/components/Settings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -216,27 +218,9 @@ const Index = () => {
       case 'map':
         return <SafetyMap />;
       case 'profile':
-        return (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <h3 className="text-lg font-semibold mb-2">Profile Coming Soon</h3>
-              <p className="text-muted-foreground">
-                User profile management will be available after backend integration.
-              </p>
-            </CardContent>
-          </Card>
-        );
+        return <Profile />;
       case 'settings':
-        return (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <h3 className="text-lg font-semibold mb-2">Settings Coming Soon</h3>
-              <p className="text-muted-foreground">
-                App settings and preferences will be available soon.
-              </p>
-            </CardContent>
-          </Card>
-        );
+        return <Settings />;
       default:
         return renderHomeContent();
     }
