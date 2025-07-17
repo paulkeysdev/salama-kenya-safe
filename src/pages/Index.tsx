@@ -12,45 +12,27 @@ import { Badge } from '@/components/ui/badge';
 import { Shield, Users, Map, AlertTriangle, Clock, Wifi, WifiOff } from 'lucide-react';
 import { t, localization } from '@/utils/localization';
 import { useToast } from '@/hooks/use-toast';
+import { OfflineIndicator } from '@/components/OfflineIndicator';
+import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
+import { USSDFallback } from '@/components/USSDFallback';
+import { useOfflineStorage } from '@/hooks/useOfflineStorage';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const { isOnline } = useOfflineStorage();
   const { toast } = useToast();
 
   useEffect(() => {
-    const handleOnline = () => {
-      setIsOnline(true);
-      toast({
-        title: t('status.online'),
-        description: "Connection restored",
-      });
-    };
-
-    const handleOffline = () => {
-      setIsOnline(false);
-      toast({
-        title: t('status.offline'),
-        description: "Working in offline mode",
-        variant: "destructive",
-      });
-    };
-
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
       clearInterval(timer);
     };
-  }, [toast]);
+  }, []);
 
   const handleLanguageChange = () => {
     // Force re-render when language changes
@@ -221,6 +203,8 @@ const Index = () => {
         return <Profile />;
       case 'settings':
         return <Settings />;
+      case 'ussd':
+        return <USSDFallback />;
       default:
         return renderHomeContent();
     }
@@ -249,8 +233,15 @@ const Index = () => {
       )}
 
       <main className="container mx-auto px-4 py-6 pb-24">
+        <PWAInstallPrompt />
+        <OfflineIndicator />
         {renderCurrentTime()}
-        {renderContent()}
+        {!isOnline && activeTab === 'home' && (
+          <div className="mb-6">
+            <USSDFallback />
+          </div>
+        )}
+        {(isOnline || activeTab !== 'ussd') && renderContent()}
       </main>
 
       <Navigation

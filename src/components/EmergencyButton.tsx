@@ -5,6 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { t } from '@/utils/localization';
 import { useToast } from '@/hooks/use-toast';
 import { useVoiceRecognition } from '@/hooks/useVoiceRecognition';
+import { useSwahiliAudio } from '@/hooks/useSwahiliAudio';
+import { useOfflineStorage } from '@/hooks/useOfflineStorage';
 
 interface EmergencyButtonProps {
   onEmergencyTrigger?: () => void;
@@ -18,20 +20,33 @@ export const EmergencyButton: React.FC<EmergencyButtonProps> = ({
   const [isEmergency, setIsEmergency] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { playDangerDetected, playEmergencyActivated, playSafeStatus } = useSwahiliAudio();
+  const { storeEmergencyIncident, isOnline } = useOfflineStorage();
 
   const handleEmergency = async () => {
     setIsLoading(true);
     setIsEmergency(true);
     
+    // Play Swahili audio alert
+    await playEmergencyActivated();
+    
+    // Store incident offline
+    const incident = storeEmergencyIncident({
+      type: 'emergency' as const,
+      location: undefined // Add geolocation if available
+    });
+    
     toast({
-      title: t('emergency.sendingAlert'),
-      description: t('voice.dangerAlert'),
+      title: isOnline ? t('emergency.sendingAlert') : "Emergency Recorded Offline",
+      description: isOnline 
+        ? t('voice.dangerAlert')
+        : "Alert will be sent when connection is restored.",
     });
 
     // Simulate emergency alert process
     setTimeout(() => {
       toast({
-        title: t('emergency.alertSent'),
+        title: isOnline ? t('emergency.alertSent') : "Emergency Saved",
         description: t('voice.locationShared'),
       });
       setIsLoading(false);
@@ -39,8 +54,17 @@ export const EmergencyButton: React.FC<EmergencyButtonProps> = ({
     }, 2000);
   };
 
-  const handleSafe = () => {
+  const handleSafe = async () => {
     setIsEmergency(false);
+    
+    // Play safe status audio
+    await playSafeStatus();
+    
+    // Store safe status
+    storeEmergencyIncident({
+      type: 'safe' as const
+    });
+    
     toast({
       title: t('emergency.safeNow'),
       description: t('voice.safeConfirm'),
