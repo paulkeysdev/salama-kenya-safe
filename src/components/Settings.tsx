@@ -14,11 +14,13 @@ import {
   Sun, 
   Globe,
   Volume2,
-  Vibrate
+  Vibrate,
+  Monitor
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { localization } from '@/utils/localization';
+import { useTheme } from '@/providers/ThemeProvider';
 
 interface SettingsData {
   location_sharing_enabled: boolean;
@@ -31,17 +33,13 @@ export const Settings = () => {
     emergency_notifications_enabled: true,
   });
   const [loading, setLoading] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [vibrationEnabled, setVibrationEnabled] = useState(true);
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     loadSettings();
-    
-    // Check system theme preference
-    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setDarkMode(isDark);
   }, []);
 
   const loadSettings = async () => {
@@ -113,13 +111,26 @@ export const Settings = () => {
     });
   };
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    // In a real app, you'd apply the theme here
-    toast({
-      title: "Theme Changed",
-      description: `Switched to ${!darkMode ? 'dark' : 'light'} mode`,
-    });
+  const getThemeIcon = () => {
+    switch (theme) {
+      case 'light':
+        return <Sun className="h-4 w-4" />;
+      case 'dark':
+        return <Moon className="h-4 w-4" />;
+      default:
+        return <Monitor className="h-4 w-4" />;
+    }
+  };
+
+  const getThemeLabel = () => {
+    switch (theme) {
+      case 'light':
+        return 'Light Mode';
+      case 'dark':
+        return 'Dark Mode';
+      default:
+        return 'System Theme';
+    }
   };
 
   if (loading) {
@@ -192,21 +203,40 @@ export const Settings = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                {darkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-                <Label htmlFor="dark-mode">Dark Mode</Label>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Use dark theme for better visibility at night
-              </p>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              {getThemeIcon()}
+              <Label>Theme</Label>
             </div>
-            <Switch
-              id="dark-mode"
-              checked={darkMode}
-              onCheckedChange={toggleDarkMode}
-            />
+            <div className="flex gap-2">
+              <Button
+                variant={theme === 'light' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setTheme('light')}
+              >
+                <Sun className="h-4 w-4 mr-2" />
+                Light
+              </Button>
+              <Button
+                variant={theme === 'dark' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setTheme('dark')}
+              >
+                <Moon className="h-4 w-4 mr-2" />
+                Dark
+              </Button>
+              <Button
+                variant={theme === 'system' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setTheme('system')}
+              >
+                <Monitor className="h-4 w-4 mr-2" />
+                System
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Current theme: {getThemeLabel()}
+            </p>
           </div>
 
           <Separator />

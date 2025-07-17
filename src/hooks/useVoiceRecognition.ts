@@ -39,22 +39,47 @@ const voiceCommands: VoiceCommand[] = [
   }
 ];
 
-// Critical Swahili emergency words that auto-trigger police messaging
-const criticalEmergencyWords = [
-  'mauaji', // murder
-  'unyanyasaji', // rape/assault
-  'wizi', // theft
-  'bunduki', // gun
-  'kisu', // knife
-  'naogopa', // I'm scared
-  'nateseka', // I'm suffering
-  'mwizi', // thief
-  'vibaya', // bad/dangerous
-  'nateseka sana', // I'm suffering badly
-  'nataka msaada', // I need help
-  'polisi haraka', // police quickly
-  'hali ya dharura' // state of emergency
-];
+// Enhanced danger words in both English and Swahili that auto-trigger emergency response
+const criticalEmergencyWords = {
+  en: [
+    // Violence & Crime
+    'murder', 'kill', 'killing', 'shot', 'shooting', 'stabbed', 'stabbing',
+    'rape', 'assault', 'attack', 'attacked', 'robbed', 'robbery', 'theft',
+    'gun', 'knife', 'weapon', 'threatening', 'kidnapped', 'kidnapping',
+    
+    // Distress calls
+    'help me', 'save me', 'scared', 'terrified', 'panic', 'emergency',
+    'dying', 'bleeding', 'hurt badly', 'unconscious', 'cant breathe',
+    'heart attack', 'stroke', 'overdose', 'poisoned',
+    
+    // Immediate danger
+    'fire', 'explosion', 'bomb', 'gas leak', 'accident', 'trapped',
+    'drowning', 'falling', 'collapsed', 'broken bones',
+    
+    // Abuse & domestic violence
+    'abuse', 'beating', 'domestic violence', 'hitting me', 'choking',
+    'threatening to kill', 'stalking', 'harassment'
+  ],
+  sw: [
+    // Ukatili & Uhalifu
+    'mauaji', 'kuua', 'ameua', 'alipigwa risasi', 'kupiga risasi', 'alichomwa', 'kuchoma',
+    'unyanyasaji', 'kushambulia', 'shambulio', 'alishambulwa', 'aliibwa', 'wizi',
+    'bunduki', 'kisu', 'silaha', 'kutishia', 'kutekwa nyara', 'utekaji nyara',
+    
+    // Kilio cha msaada
+    'nisaidie', 'niokoe', 'naogopa', 'nina hofu', 'wasiwasi', 'dharura',
+    'nakufa', 'nina damu', 'nimeumia vibaya', 'amezimia', 'siwezi kupumua',
+    'mshtuko wa moyo', 'kiharusi', 'dozi nyingi', 'nimeogwa sumu',
+    
+    // Hatari ya haraka
+    'moto', 'mlipuko', 'bomu', 'uvujaji wa gesi', 'ajali', 'nimekamatwa',
+    'ninazama', 'ninaanguka', 'ameanguka', 'mifupa imevunjika',
+    
+    // Unyanyasaji & ukatili wa kinyumbani
+    'unyanyasaji', 'kupigwa', 'ukatili wa nyumbani', 'ananipiga', 'kunikaba',
+    'anatishia kuniua', 'kunifuata', 'uongozi mbaya'
+  ]
+};
 
 interface UseVoiceRecognitionProps {
   onEmergency?: () => void;
@@ -92,7 +117,15 @@ export const useVoiceRecognition = ({
 
   const checkCriticalEmergency = useCallback((transcript: string): boolean => {
     const normalizedTranscript = transcript.toLowerCase().trim();
-    return criticalEmergencyWords.some(word => 
+    const currentLang = localization.getLanguage();
+    
+    // Check both English and current language for danger words
+    const wordsToCheck = [
+      ...criticalEmergencyWords.en,
+      ...criticalEmergencyWords[currentLang as keyof typeof criticalEmergencyWords] || []
+    ];
+    
+    return wordsToCheck.some(word => 
       normalizedTranscript.includes(word.toLowerCase())
     );
   }, []);
