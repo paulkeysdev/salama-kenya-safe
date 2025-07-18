@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { t, localization } from '@/utils/localization';
 import { useToast } from '@/hooks/use-toast';
-import { useSwahiliAudio } from './useSwahiliAudio';
-import { useOfflineStorage } from './useOfflineStorage';
 
 // Web Speech API types
 declare global {
@@ -100,8 +98,6 @@ export const useVoiceRecognition = ({
   const [isSupported, setIsSupported] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
   const { toast } = useToast();
-  const { playDangerDetected } = useSwahiliAudio();
-  const { storeEmergencyIncident } = useOfflineStorage();
 
   useEffect(() => {
     if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
@@ -209,15 +205,6 @@ export const useVoiceRecognition = ({
       
       // Check for critical emergency words first - auto-trigger police
       if (checkCriticalEmergency(transcript)) {
-        // Play Swahili danger alert
-        playDangerDetected();
-        
-        // Store the incident with detected words
-        storeEmergencyIncident({
-          type: 'emergency' as const,
-          dangerWords: [transcript]
-        });
-        
         autoSendPoliceMessage();
         stopListening();
         return;
