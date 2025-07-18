@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { AppHeader } from '@/components/AppHeader';
 import { Navigation } from '@/components/Navigation';
@@ -9,20 +10,13 @@ import { Settings } from '@/components/Settings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Users, Map, AlertTriangle, Clock, Wifi, WifiOff } from 'lucide-react';
-import { t, localization } from '@/utils/localization';
-import { useToast } from '@/hooks/use-toast';
-import { OfflineIndicator } from '@/components/OfflineIndicator';
-import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
-import { USSDFallback } from '@/components/USSDFallback';
-import { useOfflineStorage } from '@/hooks/useOfflineStorage';
+import { Shield, Users, Map, AlertTriangle, Clock } from 'lucide-react';
+import { t } from '@/utils/localization';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const { isOnline } = useOfflineStorage();
-  const { toast } = useToast();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -59,7 +53,7 @@ const Index = () => {
       </Card>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
             <Users className="h-6 w-6 text-accent mx-auto mb-2" />
@@ -81,18 +75,6 @@ const Index = () => {
             <Clock className="h-6 w-6 text-success mx-auto mb-2" />
             <p className="text-2xl font-bold">24/7</p>
             <p className="text-xs text-muted-foreground">Protection</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4 text-center">
-            {isOnline ? (
-              <Wifi className="h-6 w-6 text-success mx-auto mb-2" />
-            ) : (
-              <WifiOff className="h-6 w-6 text-warning mx-auto mb-2" />
-            )}
-            <p className="text-2xl font-bold">{isOnline ? 'ON' : 'OFF'}</p>
-            <p className="text-xs text-muted-foreground">{t('status.online')}</p>
           </CardContent>
         </Card>
       </div>
@@ -203,8 +185,6 @@ const Index = () => {
         return <Profile />;
       case 'settings':
         return <Settings />;
-      case 'ussd':
-        return <USSDFallback />;
       default:
         return renderHomeContent();
     }
@@ -233,15 +213,8 @@ const Index = () => {
       )}
 
       <main className="container mx-auto px-4 py-6 pb-24">
-        <PWAInstallPrompt />
-        <OfflineIndicator />
         {renderCurrentTime()}
-        {!isOnline && activeTab === 'home' && (
-          <div className="mb-6">
-            <USSDFallback />
-          </div>
-        )}
-        {(isOnline || activeTab !== 'ussd') && renderContent()}
+        {renderContent()}
       </main>
 
       <Navigation
